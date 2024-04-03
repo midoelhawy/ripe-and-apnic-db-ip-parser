@@ -8,7 +8,7 @@ from lib.ripe_parser import RIPE_PARSER
 
 # file_path = str(Path.joinpath(Path(__file__).parents[1],'test/chunk.db'))
 # file_path = "/home/ahmedhekal/work/personal/ripe-ip-parser/db/chunks/0/0.db"
-file_path = "/home/ahmedhekal/work/personal/ripe-ip-parser/db/ripe.db.inetnum"
+file_path = "./ripe-ip-parser/db/ripe.db.inetnum"
 
 def on_single_block_process(block):
     print(block)
