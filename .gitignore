@@ -6,3 +6,4 @@ db/*
 __pycache__
 *.pyc
 *.zip
+*db-journal
