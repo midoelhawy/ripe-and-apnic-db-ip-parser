@@ -3,3 +3,5 @@
 
 output/*
 db/*
+__pycache__
+*.pyc
