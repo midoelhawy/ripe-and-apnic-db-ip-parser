@@ -6,22 +6,34 @@ class RIPE_PARSER:
     def __init__(self):
         pass
 
+    
+    def get_ip_v6_first_and_last_ip(sub_net):
+        ip,subnet = sub_net.split("/",1)
+        first_ip = ipaddress.IPv6Address(ip).exploded
+        last_ipv6 = (ipaddress.IPv6Address(first_ip) + (2 ** (128 - int(subnet)) - 1)).exploded
+        return first_ip,last_ipv6,ip
         
 
     def format_block(block):
         new_block = {}
-        inetnum_splited = block["inetnum"].split(" - ")
-        new_block["first_ip"] = inetnum_splited[0]
-        new_block["last_ip"] = inetnum_splited[1] if len(inetnum_splited) > 1 else inetnum_splited[0] 
-        firstIp = ipaddress.ip_address(new_block["first_ip"])
-        lastIp = ipaddress.ip_address(new_block["last_ip"])
-        new_block["first_ip_int"] = int(firstIp)
-        new_block["last_ip_int"] = int(lastIp)
-        new_block["ip_count"] = new_block["last_ip_int"] - new_block["first_ip_int"] + 1
+        if block.get("ipVersion",4) == 6:
+            first_ip,last_ip,prefex = RIPE_PARSER.get_ip_v6_first_and_last_ip(block["inetnum"])
+            new_block["first_ip"] = first_ip
+            new_block["last_ip"] = last_ip
+            new_block["network_prefix"] = prefex
+        else:
+            inetnum_splited = block["inetnum"].split(" - ")
+            new_block["first_ip"] = inetnum_splited[0]
+            new_block["last_ip"] = inetnum_splited[1] if len(inetnum_splited) > 1 else inetnum_splited[0] 
+            firstIp = ipaddress.ip_address(new_block["first_ip"])
+            lastIp = ipaddress.ip_address(new_block["last_ip"])
+            new_block["first_ip_int"] = int(firstIp)
+            new_block["last_ip_int"] = int(lastIp)
         new_block["netname"] = block.get("netname", "Unknown")
         new_block["country"] = block.get("country", "Unknown")
         new_block["descr"] = block.get("descr", "Unknown")
         new_block["mnt-by"] = block.get("mnt-by", "Unknown")
+        new_block["ip_version"] = block.get("ipVersion", 4)
         
         return new_block
     
@@ -33,13 +45,24 @@ class RIPE_PARSER:
                 line = line.strip()
                 if not line or line.startswith("#"):
                     continue
-                if line.startswith("inetnum:"):
+                if line.startswith("inetnum:") or line.startswith("inet6num:"):
                     if block:
                         # data.append(RIPE_PARSER.format_block(block))
                         cb(RIPE_PARSER.format_block(block))
                         block = {}
+                    if line.startswith("inet6num:"):
+                        block["inetnum"] = line[8:]
                 if line and line.find(":") >= 0:
                     key, value = line.split(":", 1)
+                    if key == "inet6num":
+                        block["inetnum"] = value.strip()
+                        block["ipVersion"] = 6
+                        continue
+                    elif key == "inetnum":
+                        block["inetnum"] = value.strip()
+                        block["ipVersion"] = 4
+                        continue
+                    
                     #Note : This block is to avoid overwrite the information like mnt-by 
                     if key in block:
                         if key == "descr":

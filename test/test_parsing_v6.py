@@ -6,8 +6,7 @@ print(sys.path)
 
 from lib.ripe_parser import RIPE_PARSER
 
-file_path = str(Path.joinpath(Path(__file__).parents[1],'db/ripe.db.inetnum'))
-
+file_path = str(Path.joinpath(Path(__file__).parents[1],'db/ripe.db.inet6num'))
 
 def on_single_block_process(block):
     print(block)
