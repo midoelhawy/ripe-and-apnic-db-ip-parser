@@ -9,18 +9,21 @@ class RIPE_PARSER:
     
     def get_ip_v6_first_and_last_ip(sub_net):
         ip,subnet = sub_net.split("/",1)
-        first_ip = ipaddress.IPv6Address(ip).exploded
-        last_ipv6 = (ipaddress.IPv6Address(first_ip) + (2 ** (128 - int(subnet)) - 1)).exploded
-        return first_ip,last_ipv6,ip
+        first_ip = ipaddress.IPv6Address(ip)
+        last_ipv6 = (ipaddress.IPv6Address(first_ip) + (2 ** (128 - int(subnet)) - 1))
+        return first_ip.exploded,last_ipv6.exploded,ip,int(first_ip),int(last_ipv6),subnet
         
 
     def format_block(block):
         new_block = {}
         if block.get("ipVersion",4) == 6:
-            first_ip,last_ip,prefex = RIPE_PARSER.get_ip_v6_first_and_last_ip(block["inetnum"])
+            first_ip,last_ip,prefex,first_ip_int,last_ip_int,subnet  = RIPE_PARSER.get_ip_v6_first_and_last_ip(block["inetnum"])
             new_block["first_ip"] = first_ip
             new_block["last_ip"] = last_ip
             new_block["network_prefix"] = prefex
+            new_block["first_ip_int"] = first_ip_int
+            new_block["last_ip_int"] = last_ip_int
+            new_block["subnet"] = subnet
         else:
             inetnum_splited = block["inetnum"].split(" - ")
             new_block["first_ip"] = inetnum_splited[0]

@@ -12,9 +12,10 @@ class SQLiteHandler:
                     (id INTEGER PRIMARY KEY,
                     first_ip TEXT,
                     last_ip TEXT,
-                    first_ip_int INTEGER,
-                    last_ip_int INTEGER,
+                    first_ip_int TEXT,
+                    last_ip_int TEXT,
                     ip_version INTEGER,
+                    subnet INTEGER,
                     network_prefix TEXT,
                     netname TEXT,
                     country TEXT,
@@ -34,6 +35,7 @@ class SQLiteHandler:
         for entry in data:
             first_ip_int = entry.get('first_ip_int')
             last_ip_int = entry.get('last_ip_int')
+            subnet = entry.get('subnet')
 
             query = '''INSERT INTO ip_data 
                     (first_ip, last_ip, ip_version, network_prefix,
@@ -44,10 +46,14 @@ class SQLiteHandler:
 
             if first_ip_int is not None:
                 query += ', first_ip_int'
-                values.append(first_ip_int)
+                values.append(str(first_ip_int))
             if last_ip_int is not None:
                 query += ', last_ip_int'
-                values.append(last_ip_int)
+                values.append(str(last_ip_int))
+                
+            if subnet is not None:
+                query += ', subnet'
+                values.append(subnet)
 
             query += ') VALUES (?' + ', ?' * (len(values) - 1) + ')'
 

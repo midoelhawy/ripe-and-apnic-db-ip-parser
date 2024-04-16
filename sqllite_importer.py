@@ -26,9 +26,8 @@ if __name__ == "__main__":
             total_blocks_processed += len(blocks)
             blocks = []
             print(f"Total blocks processed: {total_blocks_processed}")
-    
-    RIPE_PARSER.parse_file(default_ripeV4_data,on_single_block_process)
     RIPE_PARSER.parse_file(default_ripeV6_data,on_single_block_process)
+    RIPE_PARSER.parse_file(default_ripeV4_data,on_single_block_process)
     
 
     print("Done")
