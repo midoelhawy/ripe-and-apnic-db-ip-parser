@@ -7,3 +7,4 @@ __pycache__
 *.pyc
 *.zip
 *db-journal
+base_mmdb/*

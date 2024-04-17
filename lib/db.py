@@ -1,5 +1,8 @@
 import os
 import sqlite3
+import ipaddress
+
+from lib.common import netmask_from_first_last_ip
 
 class SQLiteHandler:
     def __init__(self, db_name):
@@ -36,6 +39,13 @@ class SQLiteHandler:
             first_ip_int = entry.get('first_ip_int')
             last_ip_int = entry.get('last_ip_int')
             subnet = entry.get('subnet')
+            
+            if entry.get('ip_version') == 4:
+               subnet = netmask_from_first_last_ip(entry['first_ip'], entry['last_ip'])
+               #print(subnet)
+            
+            
+            
 
             query = '''INSERT INTO ip_data 
                     (first_ip, last_ip, ip_version, network_prefix,

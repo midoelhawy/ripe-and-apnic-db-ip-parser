@@ -19,15 +19,24 @@ if __name__ == "__main__":
 
     def on_single_block_process(block):
         global blocks,total_blocks_processed
-        blocks.append(block)
+        
+        
+        # Country is really world wide
+        if "Country is really world wide" not in block["country"]  and "Worldwide" not in block["country"]:
+            blocks.append(block)
+        else:
+            print(f"Ignoring block {block.get('first_ip')}")
+        
         if len(blocks) >= 1000:
             
             db_handler.insert_data(blocks)
             total_blocks_processed += len(blocks)
             blocks = []
             print(f"Total blocks processed: {total_blocks_processed}")
-    RIPE_PARSER.parse_file(default_ripeV6_data,on_single_block_process)
+    
     RIPE_PARSER.parse_file(default_ripeV4_data,on_single_block_process)
+
+    RIPE_PARSER.parse_file(default_ripeV6_data,on_single_block_process)
     
 
     print("Done")
