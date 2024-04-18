@@ -1,4 +1,4 @@
-# ripe-db-ip-parser
+# ripe-and-apnic-db-ip-parser
 
 ## Introduction
 
