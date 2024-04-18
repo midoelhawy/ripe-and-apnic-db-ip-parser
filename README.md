@@ -6,7 +6,7 @@
 
 ### Releases:
 
-*You will find all db(sql,mmdb) in the repository realse section , so you need to use the repo only if you need to coastumize somthing*
+*You will find all db(sql,mmdb) in the repository release section , do you need to use the repo only if you need to coastumize something*
 
 #### Download latest DB's
 
@@ -46,7 +46,7 @@ Before using the tool, ensure that you have the following prerequisites installe
 1. Clone the repository to your local machine:
 
    ```bash
-   git clone https://github.com/yourusername/ripe-db-ip-parser.git
+   git clone https://github.com/midoelhawy/ripe-and-apnic-db-ip-parser.git
    ```
 2. Navigate to the project directory:
 
