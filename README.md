@@ -4,6 +4,34 @@
 
 `ripe-db-ip-parser` is a tool designed to parse the RIPE database of IP address assignments (`ripe.db.inetnum`) and import the data into a SQLite database for easy querying and analysis. This tool also provides flexibility for users to create their custom parsers to generate JSON or any other schema/database format.
 
+### Releases:
+
+*You will find all db(sql,mmdb) in the repository realse section , so you need to use the repo only if you need to coastumize somthing*
+
+#### Download latest DB's
+
+###### To download latest `SQLITE_DB`:
+
+```bash
+    wget -O "./ripe_data.db.zip" "https://github.com/midoelhawy/ripe-db-ip-parser/releases/latest/download/db.sqlite.zip"
+    unzip -o ".ripe_data.db.zip" -d "./"
+    rm "./ripe_data.db.zip"
+
+```
+
+###### To download latest `MMDB`:
+
+```bash
+    wget -O "./ripe_data.db.zip" "https://github.com/midoelhawy/ripe-db-ip-parser/releases/latest/download/ASN_COUNTRY_AND_CITY.mmdb
+"
+    unzip -o ".ripe_data.db.zip" -d "./"
+    rm "./ripe_data.db.zip"
+
+```
+
+
+[see Releases](https://github.com/midoelhawy/ripe-and-apnic-db-ip-parser/releaseshttps:/)
+
 ## How to Use
 
 ### Prerequisites
@@ -33,10 +61,12 @@ Before using the tool, ensure that you have the following prerequisites installe
 
 ### Parsing the RIPE Database
 
-1. If you don't already have the `ripe.db.inetnum` file, download it by running the following script:
+*NOTE: you can run all process's in one step directly by running this command `./scripts/parse_all_ripe_db_and_generate_mmdb.sh`*
+
+1. download Ripe and apnic DB by running the following script:
 
    ```bash
-   ./scripts/spilit-ripe-file-in-chunks.sh
+   ./scripts/download-ripe-data.sh
    ```
 2. Run the SQL generator to import the parsed data into a SQLite database:
 
@@ -69,6 +99,9 @@ You can also write your custom parser to generate JSON or another type of schema
 3. Customize the `on_single_block_process` function to handle each IP block as per your requirements.
 4. Run the `myCustomParser.py` script to execute your custom parsing logic.
 
+### How to generate `MMDB` database
 
+*NOTE: YOU NEED SQLITE DB TO GENERATE MMDB*
 
-### HOW TO GENERATE CUSTOM MMDB
+1. install and configure `go-lang`
+2. Run `cd ./scripts && go run generate_mmdb.go`
