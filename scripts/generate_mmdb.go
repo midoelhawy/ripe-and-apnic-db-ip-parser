@@ -37,24 +37,9 @@ func main() {
 	}
 	defer sqlite_db.Close()
 
-	rows, err := sqlite_db.Query("SELECT * FROM ip_data ORDER BY first_ip_int, subnet ASC")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var ipData IPData
-		err := rows.Scan(&ipData.ID, &ipData.FirstIP, &ipData.LastIP, &ipData.FirstIPInt, &ipData.LastIPInt, &ipData.IPVersion, &ipData.Subnet, &ipData.NetworkPrefix, &ipData.Netname, &ipData.Country, &ipData.Description, &ipData.MntBy)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Printf("ID: %d, FirstIP: %s, LastIP: %s, FirstIPInt: %s, LastIPInt: %s, IPVersion: %d, Subnet: %d, NetworkPrefix: %s, Netname: %s, Country: %s, Description: %s, MntBy: %s\n", ipData.ID, ipData.FirstIP, ipData.LastIP, ipData.FirstIPInt, ipData.LastIPInt, ipData.IPVersion, ipData.Subnet, ipData.NetworkPrefix, ipData.Netname, ipData.Country, ipData.Description, ipData.MntBy)
-	}
-
-	// writer, err := mmdbwriter.Load("../db/base_mmdb/GeoLite2-ASN.mmdb", mmdbwriter.Options{})
-	writer, err := mmdbwriter.New(mmdbwriter.Options{}) //("../db/base_mmdb/GeoLite2-ASN_2.mmdb", mmdbwriter.Options{})
+	writer, err := mmdbwriter.New(mmdbwriter.Options{
+		RecordSize: 32,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,107 +56,37 @@ func main() {
 	}
 	defer city_db.Close()
 
-	_, network, err := net.ParseCIDR("194.243.217.64/31")
-
+	rows, err := sqlite_db.Query("SELECT * FROM ip_data where subnet > 0 ORDER by cast( first_ip_int as unsigned) ASC, subnet ASC")
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer rows.Close()
 
-	record := mmdbtype.Map{}
-
-	// record["autonomous_system_number"] = mmdbtype.Uint32(3269)
-
-	ip := net.ParseIP("194.243.217.64")
-
-	var asn_record map[string]any
-	if err := asn_db.Lookup(ip, &asn_record); err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(asn_record)
-	asn_number, ok := asn_record["autonomous_system_number"].(uint64)
-	if ok {
-		record["asn_number"] = mmdbtype.Uint32(asn_number)
-		// fmt.Printf("asn_number:, Type %T", asn_number, asn_number)
-	}
-
-	asn_name, ok := asn_record["autonomous_system_organization"].(string)
-	if ok {
-		record["asn_name"] = mmdbtype.String(asn_name)
-		fmt.Println("asn_name:", asn_name)
-	}
-
-	var city_record map[string]interface{}
-	if err := city_db.Lookup(ip, &city_record); err != nil {
-		log.Fatal(err)
-	}
-
-	if city, ok := city_record["city"].(map[string]interface{}); ok {
-		if names, ok := city["names"].(map[string]interface{}); ok {
-			if cityName, ok := names["en"].(string); ok {
-				fmt.Println("cityName:", cityName)
-				record["city_name"] = mmdbtype.String(cityName)
-
-			}
-		}
-	}
-
-	if country, ok := city_record["country"].(map[string]interface{}); ok {
-		if names, ok := country["names"].(map[string]interface{}); ok {
-			if countryName, ok := names["en"].(string); ok {
-				record["country_name"] = mmdbtype.String(countryName)
-				fmt.Println("countryName:", countryName)
-			}
+	var counter = 0
+	for rows.Next() {
+		var ipData IPData
+		err := rows.Scan(&ipData.ID, &ipData.FirstIP, &ipData.LastIP, &ipData.FirstIPInt, &ipData.LastIPInt, &ipData.IPVersion, &ipData.Subnet, &ipData.NetworkPrefix, &ipData.Netname, &ipData.Country, &ipData.Description, &ipData.MntBy)
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		if iso_code, ok := country["iso_code"].(string); ok {
-			record["iso_code"] = mmdbtype.String(iso_code)
-		}
-	}
-
-	if continent, ok := city_record["continent"].(map[string]interface{}); ok {
-		if names, ok := continent["names"].(map[string]interface{}); ok {
-			if continentName, ok := names["en"].(string); ok {
-				record["continent_name"] = mmdbtype.String(continentName)
-				fmt.Println("continentName:", continentName)
-			}
+		record, err := buildMMDBRecord(ipData, asn_db, city_db)
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		if code, ok := continent["code"].(string); ok {
-			record["continent_code"] = mmdbtype.String(code)
-			fmt.Println("code:", code)
-		}
-	}
-
-	if location, ok := city_record["location"].(map[string]interface{}); ok {
-		if latitude, ok := location["latitude"].(string); ok {
-			record["latitude"] = mmdbtype.String(latitude)
-			fmt.Println("latitude:", latitude)
-		}
-		if longitude, ok := location["longitude"].(string); ok {
-			record["longitude"] = mmdbtype.String(longitude)
-			fmt.Println("longitude:", longitude)
+		network, err := getNetworkFromRecord(ipData)
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		if time_zone, ok := location["time_zone"].(string); ok {
-			record["time_zone"] = mmdbtype.String(time_zone)
-			fmt.Println("time_zone:", time_zone)
-
+		err = writer.Insert(network, record)
+		if err != nil {
+			log.Fatal(err)
 		}
-
-		if accuracy_radius, ok := location["accuracy_radius"].(string); ok {
-			record["accuracy_radius"] = mmdbtype.String(accuracy_radius)
-			fmt.Println("accuracy_radius:", accuracy_radius)
-		}
-
-	}
-
-	// record["autonomous_system_organization"] = mmdbtype.String("Cloudflare_ Mia khalifa")
-	record["mnt-by"] = mmdbtype.String("mnt-by")
-
-	err = writer.Insert(network, record)
-	if err != nil {
-		log.Fatal(err)
+		counter++
+		// fmt.Printf("ID: %d, FirstIP: %s, LastIP: %s, FirstIPInt: %s, LastIPInt: %s, IPVersion: %d, Subnet: %d, NetworkPrefix: %s, Netname: %s, Country: %s, Description: %s, MntBy: %s\n", ipData.ID, ipData.FirstIP, ipData.LastIP, ipData.FirstIPInt, ipData.LastIPInt, ipData.IPVersion, ipData.Subnet, ipData.NetworkPrefix, ipData.Netname, ipData.Country, ipData.Description, ipData.MntBy)
+		fmt.Printf("Counter %d, FirstIP: %s/%d\n", counter, ipData.FirstIP, ipData.Subnet)
 	}
 
 	fh, err := os.Create("../output/mixed.mmdb")
@@ -184,10 +99,75 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// writer.InsertRange(startIpBytes,endIpBytes,)
-	// log.Println(writer.)
+	log.Println("Loaded generated in ../output/mixed.mmdb")
 
-	// writer.InsertRange("")
-	log.Println("Loaded database")
+}
 
+func buildMMDBRecord(ipData IPData, asnDB, cityDB *maxminddb.Reader) (mmdbtype.Map, error) {
+	record := mmdbtype.Map{}
+
+	ip := net.ParseIP(ipData.FirstIP)
+
+	var asnRecord map[string]interface{}
+	if err := asnDB.Lookup(ip, &asnRecord); err != nil {
+		return record, err
+	}
+
+	asnNumber, ok := asnRecord["autonomous_system_number"].(uint64)
+	if ok {
+		record["asn_number"] = mmdbtype.Uint32(asnNumber)
+	}
+
+	asnName, ok := asnRecord["autonomous_system_organization"].(string)
+	if ok {
+		record["asn_name"] = mmdbtype.String(asnName)
+	}
+
+	var mntByValue string
+	if ipData.MntBy.Valid {
+		mntByValue = ipData.MntBy.String
+	} else {
+		mntByValue = ""
+	}
+	record["mnt_by"] = mmdbtype.String(mntByValue)
+	record["netname"] = mmdbtype.String(ipData.Netname)
+	record["subnet"] = mmdbtype.Uint32(ipData.Subnet)
+	record["first_ip"] = mmdbtype.String(ipData.FirstIP)
+
+	var cityRecord map[string]interface{}
+	if err := cityDB.Lookup(ip, &cityRecord); err != nil {
+		return nil, err
+	}
+
+	if city, ok := cityRecord["city"].(map[string]interface{}); ok {
+		if names, ok := city["names"].(map[string]interface{}); ok {
+			if cityName, ok := names["en"].(string); ok {
+				record["city_name"] = mmdbtype.String(cityName)
+			}
+		}
+	}
+
+	if country, ok := cityRecord["country"].(map[string]interface{}); ok {
+		if names, ok := country["names"].(map[string]interface{}); ok {
+			if countryName, ok := names["en"].(string); ok {
+				record["country_name"] = mmdbtype.String(countryName)
+			}
+		}
+
+		if isoCode, ok := country["iso_code"].(string); ok {
+			record["iso_code"] = mmdbtype.String(isoCode)
+		}
+	}
+
+	return record, nil
+}
+
+func getNetworkFromRecord(ipData IPData) (*net.IPNet, error) {
+
+	_, network, err := net.ParseCIDR(fmt.Sprintf("%s/%d", ipData.FirstIP, ipData.Subnet))
+	if err != nil {
+		return nil, err
+	}
+
+	return network, nil
 }

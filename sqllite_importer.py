@@ -27,7 +27,7 @@ if __name__ == "__main__":
         else:
             print(f"Ignoring block {block.get('first_ip')}")
         
-        if len(blocks) >= 1000:
+        if len(blocks) >= 5000:
             
             db_handler.insert_data(blocks)
             total_blocks_processed += len(blocks)

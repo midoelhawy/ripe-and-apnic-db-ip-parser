@@ -68,3 +68,7 @@ You can also write your custom parser to generate JSON or another type of schema
    ```
 3. Customize the `on_single_block_process` function to handle each IP block as per your requirements.
 4. Run the `myCustomParser.py` script to execute your custom parsing logic.
+
+
+
+### HOW TO GENERATE CUSTOM MMDB
