@@ -13,6 +13,7 @@ if __name__ == "__main__":
 
     default_ripeV4_data = str(Path.joinpath(Path(__file__).parents[0],'db/ripe.db.inetnum'))
     default_ripeV6_data = str(Path.joinpath(Path(__file__).parents[0],'db/ripe.db.inet6num'))
+    apnic_ripeV4_data = str(Path.joinpath(Path(__file__).parents[0], 'db/apnic.db.inetnum'))
     os.remove(db_name) if os.path.exists(db_name) else None
     db_handler = SQLiteHandler(db_name)
     db_handler.create_table()
@@ -35,6 +36,8 @@ if __name__ == "__main__":
             print(f"Total blocks processed: {total_blocks_processed}")
     
     RIPE_PARSER.parse_file(default_ripeV4_data,on_single_block_process)
+    print(f"Processing Apnic Db")
+    RIPE_PARSER.parse_file(apnic_ripeV4_data, on_single_block_process)
 
     RIPE_PARSER.parse_file(default_ripeV6_data,on_single_block_process)
     

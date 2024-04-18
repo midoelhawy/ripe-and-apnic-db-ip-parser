@@ -38,7 +38,8 @@ func main() {
 	defer sqlite_db.Close()
 
 	writer, err := mmdbwriter.New(mmdbwriter.Options{
-		RecordSize: 32,
+		RecordSize:              32,
+		IncludeReservedNetworks: true,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -70,6 +71,15 @@ func main() {
 			log.Fatal(err)
 		}
 
+		log.Printf("Processing IP; %s", (ipData.FirstIP))
+
+		checkIP := net.ParseIP(ipData.FirstIP)
+
+		if checkIP.IsPrivate() {
+			log.Printf("FirstIP is Reserved; %s", (ipData.FirstIP))
+			continue
+		}
+
 		record, err := buildMMDBRecord(ipData, asn_db, city_db)
 		if err != nil {
 			log.Fatal(err)
@@ -89,7 +99,7 @@ func main() {
 		fmt.Printf("Counter %d, FirstIP: %s/%d\n", counter, ipData.FirstIP, ipData.Subnet)
 	}
 
-	fh, err := os.Create("../output/mixed.mmdb")
+	fh, err := os.Create("../output/ASN_COUNTRY_AND_CITY.mmdb")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,7 +109,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("Loaded generated in ../output/mixed.mmdb")
+	log.Println("Loaded generated in ../output/ASN_COUNTRY_AND_CITY.mmdb")
 
 }
 
@@ -131,8 +141,8 @@ func buildMMDBRecord(ipData IPData, asnDB, cityDB *maxminddb.Reader) (mmdbtype.M
 	}
 	record["mnt_by"] = mmdbtype.String(mntByValue)
 	record["netname"] = mmdbtype.String(ipData.Netname)
-	record["subnet"] = mmdbtype.Uint32(ipData.Subnet)
-	record["first_ip"] = mmdbtype.String(ipData.FirstIP)
+	// record["subnet"] = mmdbtype.Uint32(ipData.Subnet)
+	// record["first_ip"] = mmdbtype.String(ipData.FirstIP)
 
 	var cityRecord map[string]interface{}
 	if err := cityDB.Lookup(ip, &cityRecord); err != nil {

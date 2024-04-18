@@ -26,8 +26,8 @@ class RIPE_PARSER:
             new_block["subnet"] = subnet
         else:
             inetnum_splited = block["inetnum"].split(" - ")
-            new_block["first_ip"] = inetnum_splited[0]
-            new_block["last_ip"] = inetnum_splited[1] if len(inetnum_splited) > 1 else inetnum_splited[0] 
+            new_block["first_ip"] = inetnum_splited[0].strip()
+            new_block["last_ip"] = inetnum_splited[1].strip() if len(inetnum_splited) > 1 else inetnum_splited[0].strip() 
             firstIp = ipaddress.ip_address(new_block["first_ip"])
             lastIp = ipaddress.ip_address(new_block["last_ip"])
             new_block["first_ip_int"] = int(firstIp)
