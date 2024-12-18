@@ -1,10 +1,10 @@
-# ripe-and-apnic-db-ip-parser
+# global-geo-ip-database-generator
 
 > ⚠️ : Every contribution is welcome
 
 ## Introduction
 
-`ripe-db-ip-parser` is a tool designed to parse the RIPE database of IP address assignments (`ripe.db.inetnum`) and import the data into a SQLite database for easy querying and analysis. This tool also provides flexibility for users to create their custom parsers to generate JSON or any other schema/database format.
+`global-geo-ip-database-generator` is a tool designed to parse the RIPE database of IP address assignments (`ripe.db.inetnum`) and import the data into a SQLite database for easy querying and analysis. This tool also provides flexibility for users to create their custom parsers to generate JSON or any other schema/database format.
 
 
 
@@ -18,7 +18,7 @@
 ###### To download latest `SQLITE_DB`:
 
 ```bash
-    wget -O "./ripe_data.db.zip" "https://github.com/midoelhawy/ripe-db-ip-parser/releases/latest/download/db.sqlite.zip"
+    wget -O "./ripe_data.db.zip" "https://github.com/midoelhawy/global-geo-ip-database-generator/releases/latest/download/db.sqlite.zip"
     unzip -o ".ripe_data.db.zip" -d "./"
     rm "./ripe_data.db.zip"
 
@@ -27,7 +27,7 @@
 ###### To download latest `MMDB`:
 
 ```bash
-    wget -O "./ripe_data.db.zip" "https://github.com/midoelhawy/ripe-db-ip-parser/releases/latest/download/ASN_COUNTRY_AND_CITY.mmdb
+    wget -O "./ripe_data.db.zip" "https://github.com/midoelhawy/global-geo-ip-database-generator/releases/latest/download/ASN_COUNTRY_AND_CITY.mmdb
 "
     unzip -o ".ripe_data.db.zip" -d "./"
     rm "./ripe_data.db.zip"
@@ -35,7 +35,7 @@
 ```
 
 
-[see Releases](https://github.com/midoelhawy/ripe-and-apnic-db-ip-parser/releaseshttps:/)
+[see Releases](https://github.com/midoelhawy/global-geo-ip-database-generator/releaseshttps:/)
 
 ## How to Use
 
@@ -51,12 +51,12 @@ Before using the tool, ensure that you have the following prerequisites installe
 1. Clone the repository to your local machine:
 
    ```bash
-   git clone https://github.com/midoelhawy/ripe-and-apnic-db-ip-parser.git
+   git clone https://github.com/midoelhawy/global-geo-ip-database-generator.git
    ```
 2. Navigate to the project directory:
 
    ```bash
-   cd ripe-db-ip-parser
+   cd global-geo-ip-database-generator
    ```
 3. Install the required Python packages:
 
