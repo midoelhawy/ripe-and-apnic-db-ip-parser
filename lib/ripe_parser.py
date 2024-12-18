@@ -1,4 +1,5 @@
 import ipaddress
+import re
 from typing import Callable
 
 
@@ -25,9 +26,31 @@ class RIPE_PARSER:
             new_block["last_ip_int"] = last_ip_int
             new_block["subnet"] = subnet
         else:
-            inetnum_splited = block["inetnum"].split(" - ")
-            new_block["first_ip"] = inetnum_splited[0].strip()
-            new_block["last_ip"] = inetnum_splited[1].strip() if len(inetnum_splited) > 1 else inetnum_splited[0].strip() 
+            cidr_pattern = r"^\d{1,3}(\.\d{1,3}){1,3}\/\d{1,2}$"
+            if "inetnum" in block:
+                if " - " in block["inetnum"]:  
+                    inetnum_splited = block["inetnum"].split(" - ")
+                    new_block["first_ip"] = inetnum_splited[0].strip()
+                    new_block["last_ip"] = inetnum_splited[1].strip() if len(inetnum_splited) > 1 else inetnum_splited[0].strip()
+                elif re.match(cidr_pattern, block["inetnum"]):  
+                   
+                    # inetnum 5.183.80/22
+                    
+                    [cidr,netmusk] = block["inetnum"].split("/")
+                    cidr_parts = cidr.split(".")
+                    while len(cidr_parts) < 4:
+                        cidr_parts.append("0")
+
+                    cidr = ".".join(cidr_parts)
+                    
+                    ip_network = ipaddress.ip_network(f"{cidr}/{netmusk}", strict=False)
+                    new_block["first_ip"] = str(ip_network.network_address)
+                    new_block["last_ip"] = str(ip_network.broadcast_address)
+                else:
+                    raise ValueError(f"inetnum IS NOT STANDARD {block['inetnum']}")
+            else:
+                raise KeyError("Il blocco non contiene 'inetnum'.")
+            
             firstIp = ipaddress.ip_address(new_block["first_ip"])
             lastIp = ipaddress.ip_address(new_block["last_ip"])
             new_block["first_ip_int"] = int(firstIp)
@@ -51,7 +74,10 @@ class RIPE_PARSER:
                 if line.startswith("inetnum:") or line.startswith("inet6num:"):
                     if block:
                         # data.append(RIPE_PARSER.format_block(block))
-                        cb(RIPE_PARSER.format_block(block))
+                        if "inet6num" in block or "inetnum" in block:
+                            cb(RIPE_PARSER.format_block(block))
+                        else:
+                            print(f"Invalid block {block}")
                         block = {}
                     if line.startswith("inet6num:"):
                         block["inetnum"] = line[8:]
