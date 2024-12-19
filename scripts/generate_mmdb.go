@@ -57,7 +57,7 @@ func main() {
 	}
 	defer city_db.Close()
 
-	rows, err := sqlite_db.Query("SELECT * FROM ip_data where subnet > 0 ORDER by cast( first_ip_int as unsigned) ASC, subnet ASC")
+	rows, err := sqlite_db.Query("SELECT * FROM ip_data where subnet > 0 And (descr not Like 'Early registration addresses' and netname != 'ERX-NETBLOCK') ORDER by cast( first_ip_int as unsigned) ASC, subnet ASC")
 	if err != nil {
 		log.Fatal(err)
 	}
